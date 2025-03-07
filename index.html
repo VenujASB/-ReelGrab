@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReelGrab - Instagram Reel Downloader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+            background-size: 200% 200%;
+            animation: gradient 15s ease infinite;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .loading-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-100">
+    <div class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <header class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <i class="fas fa-camera-retro text-3xl mr-3"></i>
+                    <h1 class="text-2xl font-bold">ReelGrab</h1>
+                </div>
+                <nav>
+                    <ul class="flex space-x-6">
+                        <li><a href="#" class="hover:text-pink-200 transition">Home</a></li>
+                        <li><a href="#" class="hover:text-pink-200 transition">About</a></li>
+                        <li><a href="#" class="hover:text-pink-200 transition">Contact</a></li>
+                    </ul>
+                </nav>
+            </header>
+        </div>
+    </div>
+
+    <main class="container mx-auto px-6 py-8">
+        <div class="max-w-3xl mx-auto">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Download Instagram Reels</h2>
+                <p class="text-gray-600 mb-6">Paste the Instagram Reel URL below and click Download to save your favorite reels.</p>
+                
+                <div class="mb-6">
+                    <div class="flex">
+                        <input type="text" id="reelUrl" class="flex-grow rounded-l-lg border-2 border-r-0 border-gray-300 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 px-4 py-3 outline-none transition" placeholder="https://www.instagram.com/reel/..." />
+                        <button id="downloadBtn" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium rounded-r-lg px-6 py-3 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
+                            Download
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Loading State -->
+                <div id="loadingState" class="hidden">
+                    <div class="flex items-center justify-center p-6">
+                        <div class="loading-pulse">
+                            <i class="fas fa-spinner fa-spin text-4xl text-pink-500"></i>
+                        </div>
+                        <p class="ml-4 text-gray-600">Processing your request...</p>
+                    </div>
+                </div>
+                
+                <!-- Results Section -->
+                <div id="resultsSection" class="hidden">
+                    <div class="border-t border-gray-200 pt-6">
+                        <div class="flex flex-col md:flex-row">
+                            <div id="previewContainer" class="w-full md:w-1/2 mb-4 md:mb-0 md:pr-4">
+                                <!-- Video preview will be inserted here -->
+                            </div>
+                            <div class="w-full md:w-1/2 md:pl-4">
+                                <h3 id="videoTitle" class="text-xl font-semibold text-gray-800 mb-2"></h3>
+                                <p id="videoInfo" class="text-gray-600 mb-4"></p>
+                                <a id="downloadLink" href="#" class="block w-full text-center bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg px-6 py-3 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mb-3">
+                                    <i class="fas fa-download mr-2"></i> Download Video
+                                </a>
+                                <div id="errorMessage" class="hidden p-4 bg-red-100 text-red-700 rounded-lg">
+                                    <!-- Error message will be inserted here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- How to Use Section -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">How to Download Instagram Reels</h2>
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 bg-pink-500 text-white rounded-full w-8 h-8 flex items-center justify-center mt-1">1</div>
+                        <div class="ml-4">
+                            <h3 class="font-medium text-gray-800">Copy the Reel URL</h3>
+                            <p class="text-gray-600">Find the Instagram Reel you want to download and copy its URL from the address bar or by using the "Copy Link" option in the app.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 bg-pink-500 text-white rounded-full w-8 h-8 flex items-center justify-center mt-1">2</div>
+                        <div class="ml-4">
+                            <h3 class="font-medium text-gray-800">Paste the URL</h3>
+                            <p class="text-gray-600">Paste the copied URL into the input field above.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 bg-pink-500 text-white rounded-full w-8 h-8 flex items-center justify-center mt-1">3</div>
+                        <div class="ml-4">
+                            <h3 class="font-medium text-gray-800">Download Your Reel</h3>
+                            <p class="text-gray-600">Click the "Download" button and wait for the process to complete, then click the "Download Video" button.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FAQ Section -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Frequently Asked Questions</h2>
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="font-medium text-gray-800">Is it free to use?</h3>
+                        <p class="text-gray-600">Yes, ReelGrab is completely free to use without any limitations.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Is it legal to download Instagram Reels?</h3>
+                        <p class="text-gray-600">Downloading content for personal use is generally acceptable, but redistributing or using content commercially without permission may violate copyright laws.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Why can't I download some Reels?</h3>
+                        <p class="text-gray-600">Some Reels may be from private accounts or have special restrictions that prevent downloading.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h2 class="text-xl font-bold">ReelGrab</h2>
+                    <p class="text-gray-400">Download your favorite Instagram Reels</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-6 pt-6 text-center text-gray-400">
+                <p>&copy; 2025 ReelGrab. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const reelUrlInput = document.getElementById('reelUrl');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const loadingState = document.getElementById('loadingState');
+            const resultsSection = document.getElementById('resultsSection');
+            const previewContainer = document.getElementById('previewContainer');
+            const videoTitle = document.getElementById('videoTitle');
+            const videoInfo = document.getElementById('videoInfo');
+            const downloadLink = document.getElementById('downloadLink');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            downloadBtn.addEventListener('click', async function() {
+                const reelUrl = reelUrlInput.value.trim();
+                
+                if (!reelUrl) {
+                    showError('Please enter a valid Instagram Reel URL');
+                    return;
+                }
+                
+                if (!reelUrl.includes('instagram.com')) {
+                    showError('Please enter a valid Instagram URL');
+                    return;
+                }
+                
+                // Show loading state
+                loadingState.classList.remove('hidden');
+                resultsSection.classList.add('hidden');
+                errorMessage.classList.add('hidden');
+                
+                try {
+                    const response = await fetchReelInfo(reelUrl);
+                    
+                    // Hide loading state
+                    loadingState.classList.add('hidden');
+                    
+                    if (response.error) {
+                        showError(response.error);
+                        return;
+                    }
+                    
+                    // Display results
+                    displayResults(response);
+                    
+                } catch (error) {
+                    loadingState.classList.add('hidden');
+                    showError('An error occurred while processing your request. Please try again.');
+                    console.error(error);
+                }
+            });
+            
+            async function fetchReelInfo(reelUrl) {
+                // In a real implementation, you would call your backend API
+                // For demonstration, we'll simulate a response after a delay
+                
+                // This is where you would call the API you mentioned:
+                try {
+                    const apiUrl = "https://bff.listnr.tech/backend/user/getInfoYT";
+                    const payload = {
+                        'url': reelUrl,
+                        'platform': 'instagram',
+                        'type': 'video'
+                    };
+                    
+                    // Simulating API delay for demo purposes
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    
+                    // In a real implementation, you would uncomment this code:
+                    /*
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('API request failed');
+                    }
+                    
+                    return await response.json();
+                    */
+                    
+                    // For demonstration, return mock data
+                    // Replace this with the actual API call in production
+                    return {
+                        title: "Amazing Instagram Reel",
+                        author: "@creator",
+                        duration: "00:30",
+                        url: "https://example.com/video.mp4",
+                        thumbnail: "/api/placeholder/400/320", // Using a placeholder for demo
+                        size: "12.5 MB"
+                    };
+                    
+                } catch (error) {
+                    console.error('Error fetching reel information:', error);
+                    return { error: 'Failed to fetch reel information. Please try again.' };
+                }
+            }
+            
+            function displayResults(data) {
+                // Show results section
+                resultsSection.classList.remove('hidden');
+                
+                // Set video title and info
+                videoTitle.textContent = data.title || 'Instagram Reel';
+                videoInfo.textContent = `By ${data.author || 'Unknown creator'} • ${data.duration || '00:00'} • ${data.size || 'Unknown size'}`;
+                
+                // Set download link
+                downloadLink.href = data.url;
+                downloadLink.setAttribute('download', 'instagram_reel.mp4');
+                
+                // Create video preview
+                previewContainer.innerHTML = `
+                    <div class="relative pb-[56.25%] h-0 rounded-lg overflow-hidden bg-black">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <img src="${data.thumbnail}" alt="Video thumbnail" class="w-full h-full object-contain" />
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-16 h-16 bg-pink-500 bg-opacity-80 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-play text-white text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.classList.remove('hidden');
+                resultsSection.classList.remove('hidden');
+                previewContainer.innerHTML = '';
+                videoTitle.textContent = '';
+                videoInfo.textContent = '';
+                downloadLink.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
