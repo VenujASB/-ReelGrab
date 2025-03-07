@@ -215,10 +215,6 @@
             });
             
             async function fetchReelInfo(reelUrl) {
-                // In a real implementation, you would call your backend API
-                // For demonstration, we'll simulate a response after a delay
-                
-                // This is where you would call the API you mentioned:
                 try {
                     const apiUrl = "https://bff.listnr.tech/backend/user/getInfoYT";
                     const payload = {
@@ -227,12 +223,15 @@
                         'type': 'video'
                     };
                     
-                    // Simulating API delay for demo purposes
+                    // Use a CORS proxy
+                    const corsProxyUrl = "https://corsproxy.io/?";
+                    const encodedApiUrl = encodeURIComponent(apiUrl);
+                    
+                    // For GitHub Pages demonstration, include a small delay to simulate processing
                     await new Promise(resolve => setTimeout(resolve, 1500));
                     
-                    // In a real implementation, you would uncomment this code:
-                    /*
-                    const response = await fetch(apiUrl, {
+                    // Make the actual API request with CORS proxy
+                    const response = await fetch(`${corsProxyUrl}${encodedApiUrl}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -244,29 +243,51 @@
                         throw new Error('API request failed');
                     }
                     
-                    return await response.json();
-                    */
+                    // Parse and return the response
+                    const data = await response.json();
+                    return data;
                     
-                    // For demonstration, return mock data
-                    // Replace this with the actual API call in production
+                    // Fallback: If the API or CORS proxy fails, you can use this mock data
+                    /*
                     return {
                         title: "Amazing Instagram Reel",
                         author: "@creator",
                         duration: "00:30",
                         url: "https://example.com/video.mp4",
-                        thumbnail: "/api/placeholder/400/320", // Using a placeholder for demo
+                        thumbnail: "/api/placeholder/400/320",
                         size: "12.5 MB"
                     };
+                    */
                     
                 } catch (error) {
                     console.error('Error fetching reel information:', error);
-                    return { error: 'Failed to fetch reel information. Please try again.' };
+                    
+                    // Fallback to mock data if the API call fails
+                    // This ensures the demo can still work if there are API issues
+                    return {
+                        title: "Instagram Reel",
+                        author: "@creator",
+                        duration: "00:30",
+                        url: "https://example.com/video.mp4", 
+                        thumbnail: "/api/placeholder/400/320",
+                        size: "12.5 MB",
+                        note: "Using fallback data - API may be unavailable"
+                    };
                 }
             }
             
             function displayResults(data) {
                 // Show results section
                 resultsSection.classList.remove('hidden');
+                
+                // Check if we have a note (indicating fallback data)
+                if (data.note) {
+                    // Show a warning but still display the interface
+                    const warningDiv = document.createElement('div');
+                    warningDiv.className = 'p-3 mb-4 bg-yellow-100 text-yellow-800 rounded-lg';
+                    warningDiv.textContent = data.note;
+                    resultsSection.prepend(warningDiv);
+                }
                 
                 // Set video title and info
                 videoTitle.textContent = data.title || 'Instagram Reel';
@@ -280,7 +301,7 @@
                 previewContainer.innerHTML = `
                     <div class="relative pb-[56.25%] h-0 rounded-lg overflow-hidden bg-black">
                         <div class="absolute inset-0 flex items-center justify-center">
-                            <img src="${data.thumbnail}" alt="Video thumbnail" class="w-full h-full object-contain" />
+                            <img src="${data.thumbnail || "/api/placeholder/400/320"}" alt="Video thumbnail" class="w-full h-full object-contain" />
                             <div class="absolute inset-0 flex items-center justify-center">
                                 <div class="w-16 h-16 bg-pink-500 bg-opacity-80 rounded-full flex items-center justify-center">
                                     <i class="fas fa-play text-white text-2xl"></i>
