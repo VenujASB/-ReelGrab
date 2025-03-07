@@ -52,13 +52,13 @@
         <div class="max-w-3xl mx-auto">
             <div class="bg-white rounded-xl shadow-md overflow-hidden p-6 mb-8">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Download Instagram Reels</h2>
-                <p class="text-gray-600 mb-6">Paste the Instagram Reel URL below and click Download to save your favorite reels.</p>
+                <p class="text-gray-600 mb-6">Paste the Instagram Reel URL below and click Find to save your favorite reels.</p>
                 
                 <div class="mb-6">
                     <div class="flex">
                         <input type="text" id="reelUrl" class="flex-grow rounded-l-lg border-2 border-r-0 border-gray-300 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 px-4 py-3 outline-none transition" placeholder="https://www.instagram.com/reel/..." />
                         <button id="downloadBtn" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium rounded-r-lg px-6 py-3 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
-                            Download
+                            Find
                         </button>
                     </div>
                 </div>
@@ -83,9 +83,9 @@
                             <div class="w-full md:w-1/2 md:pl-4">
                                 <h3 id="videoTitle" class="text-xl font-semibold text-gray-800 mb-2"></h3>
                                 <p id="videoInfo" class="text-gray-600 mb-4"></p>
-                                <a id="downloadLink" href="#" class="block w-full text-center bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg px-6 py-3 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mb-3">
+                                <button id="downloadLink" class="block w-full text-center bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg px-6 py-3 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mb-3">
                                     <i class="fas fa-download mr-2"></i> Download Video
-                                </a>
+                                </button>
                                 <div id="errorMessage" class="hidden p-4 bg-red-100 text-red-700 rounded-lg">
                                     <!-- Error message will be inserted here -->
                                 </div>
@@ -117,7 +117,7 @@
                         <div class="flex-shrink-0 bg-pink-500 text-white rounded-full w-8 h-8 flex items-center justify-center mt-1">3</div>
                         <div class="ml-4">
                             <h3 class="font-medium text-gray-800">Download Your Reel</h3>
-                            <p class="text-gray-600">Click the "Download" button and wait for the process to complete, then click the "Download Video" button.</p>
+                            <p class="text-gray-600">Click the "Find" button and wait for the process to complete, then click the "Download Video" button to save the file to your device.</p>
                         </div>
                     </div>
                 </div>
@@ -138,6 +138,10 @@
                     <div>
                         <h3 class="font-medium text-gray-800">Why can't I download some Reels?</h3>
                         <p class="text-gray-600">Some Reels may be from private accounts or have special restrictions that prevent downloading.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-gray-800">What types of Instagram links work?</h3>
+                        <p class="text-gray-600">The downloader works best with public Instagram Reel links. Make sure you're using a link to a public Reel post.</p>
                     </div>
                 </div>
             </div>
@@ -175,6 +179,9 @@
             const downloadLink = document.getElementById('downloadLink');
             const errorMessage = document.getElementById('errorMessage');
             
+            // Store the video URL globally so it can be accessed by the download button
+            let videoData = null;
+            
             downloadBtn.addEventListener('click', async function() {
                 const reelUrl = reelUrlInput.value.trim();
                 
@@ -194,18 +201,18 @@
                 errorMessage.classList.add('hidden');
                 
                 try {
-                    const response = await fetchReelInfo(reelUrl);
+                    videoData = await fetchReelInfo(reelUrl);
                     
                     // Hide loading state
                     loadingState.classList.add('hidden');
                     
-                    if (response.error) {
-                        showError(response.error);
+                    if (videoData.error) {
+                        showError(videoData.error);
                         return;
                     }
                     
                     // Display results
-                    displayResults(response);
+                    displayResults(videoData);
                     
                 } catch (error) {
                     loadingState.classList.add('hidden');
@@ -214,88 +221,138 @@
                 }
             });
             
+            // Add click event for download button
+            downloadLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                if (!videoData || !videoData.url) {
+                    showError('Video data is not available. Please try again.');
+                    return;
+                }
+                
+                // Check if the URL is the fallback one - if so, show error
+                if (videoData.url === "https://example.com/video.mp4") {
+                    showError('Sorry, we could not process this video. Please try a different Instagram Reel.');
+                    return;
+                }
+                
+                // Create a function to download the file
+                downloadVideo(videoData.url, `instagram_reel_${Date.now()}.mp4`);
+            });
+            
             async function fetchReelInfo(reelUrl) {
-    try {
-        const apiUrl = "https://bff.listnr.tech/backend/user/getInfoYT";
-        const payload = {
-            'url': reelUrl,
-            'platform': 'instagram',
-            'type': 'video'
-        };
-
-        // Use a CORS proxy with API key
-        const corsProxyUrl = "https://corsproxy.io/?key=fd9f62d4&"; // Added API key here
-        const encodedApiUrl = encodeURIComponent(apiUrl);
-
-        // For GitHub Pages demonstration, include a small delay to simulate processing
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        // Make the actual API request with CORS proxy
-        const response = await fetch(`${corsProxyUrl}url=${encodedApiUrl}`, { // Added url=
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            throw new Error('API request failed');
-        }
-
-        // Parse and return the response
-        const data = await response.json();
-        return data;
-
-        // Fallback: If the API or CORS proxy fails, you can use this mock data
-        /*
-        return {
-            title: "Amazing Instagram Reel",
-            author: "@creator",
-            duration: "00:30",
-            url: "https://example.com/video.mp4",
-            thumbnail: "/api/placeholder/400/320",
-            size: "12.5 MB"
-        };
-        */
-
-    } catch (error) {
-        console.error('Error fetching reel information:', error);
-
-        // Fallback to mock data if the API call fails
-        // This ensures the demo can still work if there are API issues
-        return {
-            title: "Instagram Reel",
-            author: "@creator",
-            duration: "00:30",
-            url: "https://example.com/video.mp4", 
-            thumbnail: "/api/placeholder/400/320",
-            size: "12.5 MB",
-            note: "Using fallback data - API may be unavailable"
-        };
-    }
-}
+                try {
+                    // Alternative API endpoint for Instagram Reels
+                    const apiUrl = "https://instagram-downloader-download-instagram-videos-reels.p.rapidapi.com/index";
+                    
+                    // Show processing message
+                    console.log("Processing request for URL:", reelUrl);
+                    
+                    // First try with RapidAPI
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: {
+                                'content-type': 'application/json',
+                                'X-RapidAPI-Key': '7ac8f4dc63msh885074e09c24c1fp140e04jsn148b95b4a709', // Consider using environment variables for API keys
+                                'X-RapidAPI-Host': 'instagram-downloader-download-instagram-videos-reels.p.rapidapi.com'
+                            },
+                            body: JSON.stringify({
+                                url: reelUrl
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log("API response:", data);
+                            
+                            if (data && data.media) {
+                                return {
+                                    title: "Instagram Reel",
+                                    author: "@" + (data.owner?.username || "creator"),
+                                    duration: "Video",
+                                    url: data.media,
+                                    thumbnail: data.thumbnail || "/api/placeholder/400/320",
+                                    size: "MP4 Video"
+                                };
+                            }
+                        }
+                        // If we get here, the RapidAPI request didn't work
+                        console.log("RapidAPI request failed, trying CORS proxy method");
+                    } catch (rapidApiError) {
+                        console.error("RapidAPI error:", rapidApiError);
+                    }
+                    
+                    // Fallback to CORS proxy method
+                    const corsProxyUrl = "https://corsproxy.io/?";
+                    const fallbackApiUrl = "https://bff.listnr.tech/backend/user/getInfoYT";
+                    
+                    const payload = {
+                        'url': reelUrl,
+                        'platform': 'instagram',
+                        'type': 'video'
+                    };
+                    
+                    // Make the API request through the CORS proxy
+                    const fallbackResponse = await fetch(`${corsProxyUrl}${encodeURIComponent(fallbackApiUrl)}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!fallbackResponse.ok) {
+                        throw new Error(`API request failed with status: ${fallbackResponse.status}`);
+                    }
+                    
+                    const fallbackData = await fallbackResponse.json();
+                    console.log("Fallback API response:", fallbackData);
+                    
+                    // Check if we have valid data with a download URL
+                    if (!fallbackData || !fallbackData.url) {
+                        throw new Error('No valid download URL found in the response');
+                    }
+                    
+                    return {
+                        title: fallbackData.title || "Instagram Reel",
+                        author: fallbackData.author || "@creator",
+                        duration: fallbackData.duration || "00:30",
+                        url: fallbackData.url,
+                        thumbnail: fallbackData.thumbnail || "/api/placeholder/400/320",
+                        size: fallbackData.size || "Unknown size"
+                    };
+                    
+                } catch (error) {
+                    console.error('Error fetching reel information:', error);
+                    
+                    // For demonstration/testing purposes only - showing a better error to the user
+                    return {
+                        title: "Instagram Reel",
+                        author: "@creator",
+                        duration: "00:30",
+                        url: "https://example.com/video.mp4", // This is a placeholder that will be caught
+                        thumbnail: "/api/placeholder/400/320",
+                        size: "Unknown size",
+                        error: "Could not process this Instagram Reel. Please try a different link or try again later."
+                    };
+                }
+            }
             
             function displayResults(data) {
                 // Show results section
                 resultsSection.classList.remove('hidden');
+                downloadLink.classList.remove('hidden');
                 
-                // Check if we have a note (indicating fallback data)
-                if (data.note) {
-                    // Show a warning but still display the interface
-                    const warningDiv = document.createElement('div');
-                    warningDiv.className = 'p-3 mb-4 bg-yellow-100 text-yellow-800 rounded-lg';
-                    warningDiv.textContent = data.note;
-                    resultsSection.prepend(warningDiv);
+                // Check if we have an error
+                if (data.error) {
+                    showError(data.error);
+                    return;
                 }
                 
                 // Set video title and info
                 videoTitle.textContent = data.title || 'Instagram Reel';
                 videoInfo.textContent = `By ${data.author || 'Unknown creator'} • ${data.duration || '00:00'} • ${data.size || 'Unknown size'}`;
-                
-                // Set download link
-                downloadLink.href = data.url;
-                downloadLink.setAttribute('download', 'instagram_reel.mp4');
                 
                 // Create video preview
                 previewContainer.innerHTML = `
@@ -310,6 +367,29 @@
                         </div>
                     </div>
                 `;
+            }
+            
+            function downloadVideo(url, filename) {
+                // Check for placeholder URL
+                if (url === "https://example.com/video.mp4") {
+                    showError("Download failed. Please try a different Instagram Reel.");
+                    return;
+                }
+                
+                // Create a hidden anchor element to trigger the download
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                
+                // Trigger click to start download
+                a.click();
+                
+                // Clean up
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                }, 100);
             }
             
             function showError(message) {
